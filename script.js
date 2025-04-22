@@ -44,11 +44,15 @@ function swipeCard(direction) {
   const card = cards[currentIndex];
   if (!card) return;
 
+  // Add a green or red border when voting
   card.classList.add(direction === 'right' ? 'swipe-right' : 'swipe-left');
+  card.classList.add('voted');
+  card.classList.add(direction === 'right' ? 'right' : 'left');
+  
   setTimeout(() => {
     card.style.display = 'none';
     card.style.transform = 'translateX(0) rotate(0)';
-    card.classList.remove('swipe-right', 'swipe-left');
+    card.classList.remove('swipe-right', 'swipe-left', 'voted', 'right', 'left');
     showNextCard();
   }, 300);
 }
@@ -57,6 +61,8 @@ function showNextCard() {
   currentIndex++;
   if (currentIndex < cards.length) {
     cards[currentIndex].style.display = 'block';
+    cards[currentIndex].style.opacity = 1;
+    cards[currentIndex].style.transform = 'scale(1)';
   }
 }
 
