@@ -5,22 +5,22 @@ function setupCard(card) {
   let startX = 0;
   let isDragging = false;
 
-  const onMouseDown = (e) => {
-    startX = e.clientX || e.touches[0].clientX; // For touch or mouse
+  const onDragStart = (x) => {
+    startX = x;
     isDragging = true;
     card.style.transition = 'none';
   };
 
-  const onMouseMove = (e) => {
+  const onDragMove = (x) => {
     if (!isDragging) return;
-    const deltaX = (e.clientX || e.touches[0].clientX) - startX; // For touch or mouse
+    const deltaX = x - startX;
     card.style.transform = `translateX(${deltaX}px) rotate(${deltaX / 20}deg)`;
   };
 
-  const onMouseUp = (e) => {
+  const onDragEnd = (x) => {
     if (!isDragging) return;
     isDragging = false;
-    const deltaX = (e.clientX || e.changedTouches[0].clientX) - startX; // For touch or mouse
+    const deltaX = x - startX;
     if (Math.abs(deltaX) > 100) {
       swipeCard(deltaX > 0 ? 'right' : 'left');
     } else {
@@ -30,29 +30,28 @@ function setupCard(card) {
   };
 
   // Mouse events
-  card.addEventListener('mousedown', onMouseDown);
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', onMouseUp);
+  card.addEventListener('mousedown', (e) => onDragStart(e.clientX));
+  window.addEventListener('mousemove', (e) => onDragMove(e.clientX));
+  window.addEventListener('mouseup', (e) => onDragEnd(e.clientX));
 
-  // Touch events for mobile
-  card.addEventListener('touchstart', onMouseDown);
-  window.addEventListener('touchmove', onMouseMove);
-  window.addEventListener('touchend', onMouseUp);
+  // Touch events
+  card.addEventListener('touchstart', (e) => onDragStart(e.touches[0].clientX));
+  card.addEventListener('touchmove', (e) => {
+    onDragMove(e.touches[0].clientX);
+    e.preventDefault();
+  }, { passive: false });
+  card.addEventListener('touchend', (e) => onDragEnd(e.changedTouches[0].clientX));
 }
 
 function swipeCard(direction) {
   const card = cards[currentIndex];
   if (!card) return;
 
-  // Add a green or red border when voting
   card.classList.add(direction === 'right' ? 'swipe-right' : 'swipe-left');
-  card.classList.add('voted');
-  card.classList.add(direction === 'right' ? 'right' : 'left');
-  
   setTimeout(() => {
     card.style.display = 'none';
     card.style.transform = 'translateX(0) rotate(0)';
-    card.classList.remove('swipe-right', 'swipe-left', 'voted', 'right', 'left');
+    card.classList.remove('swipe-right', 'swipe-left');
     showNextCard();
   }, 300);
 }
@@ -60,15 +59,13 @@ function swipeCard(direction) {
 function showNextCard() {
   currentIndex++;
   if (currentIndex < cards.length) {
-    cards[currentIndex].style.display = 'block';
-    cards[currentIndex].style.opacity = 1;
-    cards[currentIndex].style.transform = 'scale(1)';
+    cards[currentIndex].style.display = 'flex';
   }
 }
 
-// Setup all cards
+// Initialize all cards
 cards.forEach((card, index) => {
-  card.style.display = index === 0 ? 'block' : 'none';
+  card.style.display = index === 0 ? 'flex' : 'none';
   setupCard(card);
 });
 
