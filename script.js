@@ -6,21 +6,21 @@ function setupCard(card) {
   let isDragging = false;
 
   const onMouseDown = (e) => {
-    startX = e.clientX;
+    startX = e.clientX || e.touches[0].clientX; // For touch or mouse
     isDragging = true;
     card.style.transition = 'none';
   };
 
   const onMouseMove = (e) => {
     if (!isDragging) return;
-    const deltaX = e.clientX - startX;
+    const deltaX = (e.clientX || e.touches[0].clientX) - startX; // For touch or mouse
     card.style.transform = `translateX(${deltaX}px) rotate(${deltaX / 20}deg)`;
   };
 
   const onMouseUp = (e) => {
     if (!isDragging) return;
     isDragging = false;
-    const deltaX = e.clientX - startX;
+    const deltaX = (e.clientX || e.changedTouches[0].clientX) - startX; // For touch or mouse
     if (Math.abs(deltaX) > 100) {
       swipeCard(deltaX > 0 ? 'right' : 'left');
     } else {
@@ -29,9 +29,15 @@ function setupCard(card) {
     }
   };
 
+  // Mouse events
   card.addEventListener('mousedown', onMouseDown);
   window.addEventListener('mousemove', onMouseMove);
   window.addEventListener('mouseup', onMouseUp);
+
+  // Touch events for mobile
+  card.addEventListener('touchstart', onMouseDown);
+  window.addEventListener('touchmove', onMouseMove);
+  window.addEventListener('touchend', onMouseUp);
 }
 
 function swipeCard(direction) {
